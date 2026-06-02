@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Opus 4.8: Field Guide</title>
+<style>
+  :root{
+    --paper:#F4F1EA;
+    --paper-2:#EDE8DD;
+    --ink:#2B2722;
+    --ink-soft:#5C544A;
+    --clay:#CC785C;
+    --clay-deep:#B05F44;
+    --sand:#D4A27F;
+    --line:#D8D0C2;
+    --good:#5C7C56;
+    --warn:#B8863B;
+    --bad:#B05F44;
+    --shadow:rgba(43,39,34,.28);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:radial-gradient(130% 130% at 50% 0%,#34302a 0%,#23201b 55%,#171410 100%);
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:24px 16px;
+    overflow-x:hidden;
+  }
+  .masthead{
+    color:#E8E0D2;text-align:center;margin-bottom:18px;letter-spacing:.32em;
+    font-size:11px;text-transform:uppercase;opacity:.65;font-weight:600;
+  }
+  /* ---------- BOOK ---------- */
+  .stage{perspective:2600px;width:100%;max-width:1040px;transform-origin:center center;transition:transform .25s ease;will-change:transform;}
+  .book{
+    position:relative;
+    width:100%;
+    aspect-ratio:1.52 / 1;
+    margin:0 auto;
+    transform-style:preserve-3d;
+    transition:transform .6s ease;
+  }
+  .sheet{
+    position:absolute;top:0;right:0;
+    width:50%;height:100%;
+    transform-style:preserve-3d;
+    transform-origin:left center;
+    transition:transform 1s cubic-bezier(.42,.0,.18,1);
+  }
+  .sheet.flipped{transform:rotateY(-180deg);}
+  .face{
+    position:absolute;inset:0;
+    backface-visibility:hidden;
+    overflow:hidden;
+    background:var(--paper);
+    background-image:
+      linear-gradient(135deg,rgba(255,255,255,.5),rgba(255,255,255,0) 45%),
+      repeating-linear-gradient(0deg,rgba(120,100,70,.022) 0 2px,transparent 2px 4px);
+    display:flex;flex-direction:column;
+    padding:7.2% 8% 5.4%;
+  }
+  .face.front{transform:rotateY(0deg);border-radius:3px 10px 10px 3px;
+    box-shadow:inset 7px 0 16px -8px var(--shadow);}
+  .face.back{transform:rotateY(180deg);border-radius:10px 3px 3px 10px;
+    box-shadow:inset -7px 0 16px -8px var(--shadow);}
+  /* page-edge stacking illusion */
+  .book::after{
+    content:"";position:absolute;top:1.4%;left:50%;height:97.2%;width:3px;
+    background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(0,0,0,0));
+    transform:translateX(-1px);z-index:1;pointer-events:none;
+  }
+  /* ---------- COVER ---------- */
+  .cover{
+    background:
+      radial-gradient(140% 90% at 80% 10%,#D88E6E 0%,rgba(216,142,110,0) 55%),
+      linear-gradient(160deg,#B05F44 0%,#8F4A33 60%,#6E3826 100%);
+    color:#F6EFE6;
+    justify-content:space-between;
+    background-image:
+      radial-gradient(140% 90% at 80% 10%,rgba(232,178,127,.55) 0%,rgba(216,142,110,0) 55%),
+      linear-gradient(160deg,#B05F44 0%,#8F4A33 60%,#5f3022 100%),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px);
+  }
+  .cover .eyebrow{color:#F1D9C8;opacity:.9}
+  .cover h1{color:#FBF5EC;}
+  .cover-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block;object-fit:cover;object-position:center top}
+  .cover-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(70,34,22,.34) 0%,rgba(70,34,22,0) 16%,rgba(40,20,13,0) 40%,rgba(31,16,10,.50) 60%,rgba(26,13,8,.88) 80%,rgba(22,11,7,.97) 100%);}
+  .cover-fg{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:space-between;}
+  .cover-fg .eyebrow{text-shadow:0 1px 8px rgba(30,14,9,.55)}
+  .cover-fg h1{text-shadow:0 2px 20px rgba(30,14,9,.6)}
+  .cover-fg .kicker{color:#F3DDCD;margin-top:8px;text-shadow:0 1px 10px rgba(30,14,9,.55)}
+  .cover-fg .kicker-row{display:flex;align-items:baseline;gap:9px;flex-wrap:nowrap;margin-top:8px}
+  .cover-fg .kicker{margin:0;font-size:clamp(14px,1.7vw,18px);white-space:nowrap}
+  .cover-fg .attrib{font-family:var(--serif);font-style:italic;color:#E9C7B3;white-space:nowrap;
+    font-size:clamp(10px,1.3vw,12px);opacity:.92;text-shadow:0 1px 8px rgba(30,14,9,.55)}
+  .cover-fg p{color:#F5E9DC;max-width:100%;margin-top:10px;text-shadow:0 1px 8px rgba(30,14,9,.55)}
+  .cover-foot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:12px;white-space:nowrap;
+    font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#F1D9C8;opacity:.82;font-weight:600;
+    text-shadow:0 1px 8px rgba(30,14,9,.6)}
+  .cover-foot span{white-space:nowrap}
+  .cover-foot em{font-style:italic;text-transform:none;letter-spacing:.02em;opacity:1}
+  /* ---------- TYPOGRAPHY ---------- */
+  .eyebrow{font-size:11px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;
+    color:var(--clay-deep);margin-bottom:14px;}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(30px,5vw,58px);
+    line-height:1.02;letter-spacing:-.01em;}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(21px,3vw,30px);
+    line-height:1.08;letter-spacing:-.01em;margin-bottom:4px;}
+  .kicker{font-family:var(--serif);font-style:italic;color:var(--clay-deep);
+    font-size:clamp(15px,1.7vw,18px);margin-bottom:14px;}
+  p{font-size:clamp(12px,1.32vw,14.5px);line-height:1.5;color:var(--ink-soft);}
+  strong{color:var(--ink);font-weight:650;}
+  .lead{font-family:var(--serif);font-size:clamp(15px,1.9vw,20px);line-height:1.34;
+    color:var(--ink);margin-bottom:12px;}
+  .lead .hl{color:var(--clay-deep);font-style:italic;}
+  .body-scroll{overflow:auto;flex:1;padding-right:4px;}
+  .body-scroll::-webkit-scrollbar{width:5px}
+  .body-scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+  .pagenum{font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-soft);opacity:.55;margin-top:10px;font-weight:600;}
+  .cover .pagenum{color:#F1D9C8;opacity:.7}
+  /* feature list */
+  .feat{display:flex;gap:11px;margin:11px 0;align-items:flex-start}
+  .feat .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--clay);
+    color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;
+    justify-content:center;font-family:var(--serif);box-shadow:0 2px 5px rgba(176,95,68,.4)}
+  .feat h3{font-size:14px;color:var(--ink);margin-bottom:1px;font-weight:680}
+  .feat p{font-size:12px;line-height:1.42}
+  /* stat row */
+  .stats{display:flex;gap:8px;margin:8px 0 4px;flex-wrap:wrap}
+  .stat{flex:1;min-width:78px;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:9px;padding:9px 10px;text-align:center}
+  .stat .big{font-family:var(--serif);font-size:clamp(18px,2.6vw,25px);font-weight:680;
+    color:var(--clay-deep);line-height:1}
+  .stat .lbl{font-size:9.5px;letter-spacing:.04em;color:var(--ink-soft);margin-top:4px;
+    text-transform:uppercase;font-weight:600;line-height:1.25}
+  /* two columns */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .col{border-radius:10px;padding:11px 12px}
+  .col.yes{background:rgba(92,124,86,.1);border:1px solid rgba(92,124,86,.3)}
+  .col.no{background:rgba(176,95,68,.09);border:1px solid rgba(176,95,68,.28)}
+  .col h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;
+    font-weight:700}
+  .col.yes h4{color:var(--good)} .col.no h4{color:var(--bad)}
+  .col li{font-size:11.5px;line-height:1.38;color:var(--ink-soft);list-style:none;
+    padding-left:14px;position:relative;margin-bottom:6px}
+  .col.yes li::before{content:"+";position:absolute;left:0;color:var(--good);font-weight:800}
+  .col.no li::before{content:"\2013";position:absolute;left:0;color:var(--bad);font-weight:800}
+  /* praise vs criticism face-off */
+  .vs{display:grid;grid-template-columns:1fr 46px 1fr;align-items:stretch;margin:10px 0 4px}
+  .vs-col{display:flex;flex-direction:column;gap:7px}
+  .vs-card{border-radius:9px;padding:8px 11px}
+  .vs-card .t{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;margin-bottom:3px}
+  .vs-card p{font-size:11px;line-height:1.34}
+  .vs-col.praise .vs-card{background:rgba(92,124,86,.1);border:1px solid rgba(92,124,86,.3)}
+  .vs-col.praise .vs-card .t{color:var(--good)}
+  .vs-col.crit .vs-card{background:rgba(176,95,68,.09);border:1px solid rgba(176,95,68,.28)}
+  .vs-col.crit .vs-card .t{color:var(--bad)}
+  .vs-spine{position:relative;display:flex;align-items:center;justify-content:center}
+  .vs-spine::before{content:"";position:absolute;top:2px;bottom:2px;left:50%;width:2px;
+    background:var(--ink);transform:translateX(-1px)}
+  .vs-badge{position:relative;z-index:2;background:var(--paper);border:1.5px solid var(--ink);
+    color:var(--ink);font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    padding:4px 6px;border-radius:5px}
+  /* viral tweet rows — alternating image/text, paper-toned cards blend into the page */
+  .tweet-row{display:flex;gap:18px;align-items:center;margin-bottom:2px}
+  .tweet-row:last-child{margin-bottom:0}
+  .tweet-row img{flex:0 0 auto;width:53%;max-width:265px;height:auto}
+  .tweet-row .cap{flex:1;font-size:12px;line-height:1.5;color:var(--ink-soft)}
+  .tweet-row .cap b{color:var(--ink);font-weight:650}
+  /* flipped row: caption left, image right */
+  .tweet-row.flip{flex-direction:row-reverse}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+  th{text-align:left;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-soft);padding:5px 6px;border-bottom:1.5px solid var(--clay);font-weight:700}
+  td{padding:5px 6px;border-bottom:1px solid var(--line);color:var(--ink-soft);vertical-align:top}
+  td.b{color:var(--ink);font-weight:650;font-family:var(--serif)}
+  .tag{display:inline-block;font-size:8.5px;font-weight:700;padding:1px 6px;border-radius:20px;
+    letter-spacing:.03em;text-transform:uppercase}
+  .tag.win{background:rgba(92,124,86,.16);color:var(--good)}
+  .tag.par{background:rgba(184,134,59,.16);color:var(--warn)}
+  .tag.loss{background:rgba(176,95,68,.16);color:var(--bad)}
+  .tag.v{background:rgba(92,84,74,.12);color:var(--ink-soft)}
+  /* quote cards */
+  .q{border-left:3px solid var(--clay);padding:3px 0 3px 12px;margin:9px 0}
+  .q p{font-family:var(--serif);font-size:12.5px;line-height:1.36;color:var(--ink);font-style:italic}
+  .q .src{font-style:normal;font-family:var(--sans);font-size:10px;color:var(--clay-deep);
+    margin-top:4px;font-weight:650}
+  .q.neg{border-color:var(--ink-soft)} .q.neg .src{color:var(--ink-soft)}
+  /* numbered how-to */
+  .how{margin:8px 0}
+  .how li{list-style:none;font-size:11.8px;line-height:1.4;color:var(--ink-soft);
+    margin-bottom:8px;padding-left:24px;position:relative;counter-increment:h}
+  .how{counter-reset:h}
+  .how li::before{content:counter(h);position:absolute;left:0;top:0;width:18px;height:18px;
+    background:var(--ink);color:var(--paper);border-radius:50%;font-size:10px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;font-family:var(--serif)}
+  .how b{color:var(--ink)}
+  .arc{display:flex;align-items:center;gap:6px;margin:6px 0 12px;font-size:9.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft)}
+  .arc span{background:var(--paper-2);border:1px solid var(--line);padding:5px 8px;border-radius:7px;flex:1;text-align:center}
+  .arc .ar{flex:0 0 auto;color:var(--clay)}
+  .split{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+  .split div{background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:8px 9px}
+  .split .flag{font-size:14px} .split h5{font-size:11px;margin:3px 0;color:var(--ink)}
+  .split p{font-size:10px;line-height:1.35}
+  .verdict-box{background:var(--ink);color:var(--paper);border-radius:12px;padding:16px 18px;margin:10px 0}
+  .verdict-box h2{color:#FBF5EC} .verdict-box p{color:#D9D0C0}
+  .verdict-box .hl{color:var(--sand);font-style:italic;font-family:var(--serif)}
+  .src-list{font-size:10.5px;line-height:1.7;color:var(--ink-soft);columns:2;column-gap:18px}
+  .src-list b{color:var(--ink)}
+  .src-list .grp{break-inside:avoid;margin-bottom:4px;line-height:1.4}
+  .src-list .grp b{color:var(--clay-deep)}
+  .callout{background:rgba(204,120,92,.1);border:1px solid rgba(204,120,92,.3);
+    border-radius:9px;padding:9px 11px;margin:8px 0;font-size:11px;line-height:1.4;color:var(--ink)}
+  .callout b{color:var(--clay-deep)}
+  /* ---------- page 04: full-bleed infographic image ---------- */
+  .face.dwfull{padding:0;background:#F3EEE2}
+  .face.dwfull img{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+  /* ---------- page 04: dynamic-workflows figure as page body ---------- */
+  .dwwrap{flex:1;min-height:0;margin:2px -7.5% 0;display:flex;align-items:flex-start;justify-content:center}
+  .dwwrap img,.dwwrap svg{width:100%;height:100%;object-fit:contain;object-position:center;display:block}
+  /* ---------- page 05: prototyping methods ---------- */
+  .pm-why{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:7px 0 2px}
+  .pm-why div{background:var(--paper-2);border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+  .pm-why h5{font-size:11px;color:var(--ink);margin-bottom:2px;font-weight:700}
+  .pm-why p{font-size:9.5px;line-height:1.3}
+  .pm-ladder{display:flex;align-items:center;gap:9px;margin:9px 0 6px;font-size:8.5px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);white-space:nowrap}
+  .pm-ladder .bar{flex:1;height:4px;border-radius:3px;
+    background:linear-gradient(90deg,var(--sand),var(--clay) 55%,var(--clay-deep))}
+  .pm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .pm{background:var(--paper-2);border:1px solid var(--line);border-radius:9px;
+    padding:7px 8px 7px;display:flex;flex-direction:column}
+  .pm-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .pm-ic{width:21px;height:21px;flex:0 0 21px;color:var(--clay-deep);display:block}
+  .pm-ic svg{width:100%;height:100%;display:block;fill:currentColor}
+  .pm-name{font-size:12px;font-weight:600;color:var(--ink);font-family:var(--serif)}
+  .pm p{font-size:9.5px;line-height:1.3}
+  .pm .fi{font-size:7.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+    color:var(--clay-deep);margin-top:auto;padding-top:5px}
+  /* ---------- page 06: DeepSWE benchmark bar chart ---------- */
+  .bh{display:flex;justify-content:space-between;align-items:baseline;font-size:8.5px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin:9px 0 8px}
+  .bh .d{letter-spacing:.04em}
+  .bench{margin-bottom:5px}
+  .brow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .brow .nm{flex:0 0 82px;font-size:10px;font-weight:600;color:var(--ink);text-align:right;line-height:1.05}
+  .brow .nm i{font-style:normal;color:var(--ink-soft);font-size:7.5px;font-weight:600;display:block}
+  .btrack{flex:1;height:15px;background:var(--paper-2);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:block}
+  .bfill{display:block;height:100%;background:var(--sand);border-radius:0 3px 3px 0}
+  .bfill.lead{background:var(--ink)}
+  .bfill.you{background:var(--clay)}
+  .brow .val{flex:0 0 50px;font-family:var(--serif);font-weight:700;font-size:12px;color:var(--ink)}
+  .brow.hi .nm{color:var(--clay-deep);font-weight:700}
+  .brow .val s{font-size:7.5px;color:var(--ink-soft);text-decoration:none;font-family:var(--sans);font-weight:600;margin-left:1px}
+  .bcap{font-size:8px;line-height:1.4;color:var(--ink-soft);font-style:italic;margin:2px 0 2px}
+  .notes2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+  .note{border-radius:9px;padding:9px 10px;font-size:9.5px;line-height:1.4}
+  .note h6{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+  .note.loop{background:rgba(204,120,92,.1);border:1px solid rgba(204,120,92,.3);color:var(--ink-soft)}
+  .note.loop h6{color:var(--clay-deep)}
+  .note.proj{background:var(--ink);color:#D9D0C0}
+  .note.proj h6{color:var(--sand)}
+  .note b{color:var(--ink);font-weight:650}
+  .note.proj b{color:#FBF5EC}
+  /* ---------- page 07: local models over WireGuard ---------- */
+  .lm-shot{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#16140F;
+    box-shadow:0 5px 16px rgba(43,39,34,.20);margin:2px auto 0;max-width:80%}
+  .lm-bar{display:flex;align-items:center;gap:6px;background:var(--paper-2);
+    border-bottom:1px solid var(--line);padding:6px 10px}
+  .lm-bar .dot{width:9px;height:9px;border-radius:50%;background:var(--sand);flex:0 0 9px}
+  .lm-bar .dot.b{background:var(--clay)} .lm-bar .dot.c{background:var(--clay-deep)}
+  .lm-bar .url{flex:1;margin-left:6px;font-family:ui-monospace,"Consolas",monospace;font-size:8.5px;
+    color:var(--ink-soft);background:var(--paper);border:1px solid var(--line);border-radius:5px;
+    padding:2px 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lm-bar .lock{flex:0 0 auto;color:var(--good);font-size:9px;margin-right:1px}
+  .lm-shot img{display:block;width:100%;height:auto}
+  .lm-cap{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin:10px 0 0;
+    font-size:9px;color:var(--ink-soft);line-height:1.28}
+  .lm-cap .k{color:var(--clay-deep);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:8px}
+  .lm-cap b{color:var(--ink);font-weight:650}
+  .lm-why{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .lm-why div{background:var(--paper-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+  .lm-why h5{font-size:10.5px;color:var(--ink);margin-bottom:2px;font-weight:700}
+  .lm-why p{font-size:9.5px;line-height:1.3}
+  /* ---------- (legacy) DYNAMIC-WORKFLOWS INFOGRAPHIC · "Where the Work Lives" (page 04) ---------- */
+  .dwfit{flex:1;min-height:0;min-width:0;margin-top:6px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden}
+  .dwfig{flex:none;width:100%;min-width:0;display:grid;grid-template-rows:auto 1fr auto auto auto;gap:10px;transform-origin:top center}
+  .dwfig svg{display:block}
+  .ww-ic{display:inline-flex;align-items:center;justify-content:center;color:var(--ink)}
+  .ww-ic svg{width:100%;height:100%;display:block}
+  /* premise banner */
+  .ww-premise{display:flex;align-items:center;gap:9px;font-size:9.5px;line-height:1.32;color:var(--ink-soft)}
+  .ww-premise .ww-ic{width:22px;height:22px;flex:0 0 22px;color:var(--clay-deep)}
+  .ww-premise b{color:var(--ink);font-weight:680}
+  /* HERO contrast */
+  .ww-hero{position:relative;border:1px solid var(--line);border-radius:11px;background:rgba(237,232,221,.32);
+    padding:9px 11px 10px;display:flex;flex-direction:column;min-height:0;min-width:0}
+  .ww-hero-eyebrow{text-align:center;font-size:8px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    color:var(--clay-deep);margin-bottom:8px}
+  .ww-cols{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:0;min-width:0}
+  .ww-col{display:flex;flex-direction:column;padding:0 11px;min-width:0}
+  .ww-col.left{border-right:1px dashed var(--ink-soft)}
+  .ww-col h4{font-family:var(--serif);font-size:9.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .ww-col.left h4{color:var(--ink-soft)}
+  .ww-edge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg);
+    font-size:6.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+    background:var(--paper);padding:2px 5px;white-space:nowrap;z-index:2}
+  .ww-cap{font-size:8px;line-height:1.32;color:var(--ink-soft);margin-top:auto;padding-top:7px}
+  .ww-cap.k{color:var(--ink)}
+  .ww-chat{position:relative;border:1.3px solid var(--ink-soft);border-radius:6px;background:rgba(244,241,234,.55);
+    height:108px;overflow:hidden;padding:7px}
+  .ww-chat .slip{height:10px;border-radius:2px;background:var(--sand);opacity:.6;margin-bottom:5px}
+  .ww-chat .slip:nth-child(even){opacity:.42}
+  .ww-stamp{position:absolute;right:7px;bottom:7px;transform:rotate(-7deg);border:1.5px solid var(--clay-deep);
+    color:var(--clay-deep);font-weight:800;font-size:8px;letter-spacing:.05em;padding:2px 6px;border-radius:3px;
+    background:rgba(244,241,234,.92)}
+  .ww-handoff{display:flex;align-items:center;gap:5px;font-size:7.5px;font-style:italic;color:var(--ink-soft);margin-bottom:5px}
+  .ww-handoff .ww-ic{width:15px;height:15px;flex:0 0 15px;color:var(--ink)}
+  .ww-runtime{border:1.4px solid var(--clay-deep);border-radius:7px;background:var(--sand);padding:7px 8px}
+  .ww-runtime .rl{font-size:6.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--clay-deep);
+    line-height:1.2;margin-bottom:5px}
+  .ww-fan{width:100%;height:18px;color:var(--clay-deep);margin-bottom:6px}
+  .ww-var{display:block;font-family:ui-monospace,"Consolas",monospace;font-size:7.5px;color:var(--clay-deep);
+    background:rgba(244,241,234,.78);border:1px solid rgba(176,95,68,.45);border-radius:3px;padding:2px 5px;margin-bottom:3px}
+  .ww-return{display:flex;align-items:center;gap:6px;margin-top:7px}
+  .ww-return .ww-ic{width:24px;height:12px;flex:0 0 24px;color:var(--good)}
+  .ww-return .lbl{font-size:7.5px;font-style:italic;font-weight:700;color:var(--good);flex:0 0 auto}
+  .ww-mini{flex:1;border:1.2px solid var(--ink-soft);border-radius:5px;background:rgba(244,241,234,.55);
+    padding:5px 6px;display:flex;align-items:center;min-width:0}
+  .ww-mini i{display:block;height:6px;width:64%;border-radius:2px;background:var(--good);opacity:.5}
+  /* consequence strip */
+  .ww-strip-h,.ww-trig-h{font-size:8px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+    color:var(--ink-soft);margin-bottom:6px}
+  .ww-beats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;position:relative}
+  .ww-beats::before{content:"";position:absolute;left:8%;right:8%;top:11px;height:1.2px;background:var(--clay);opacity:.5}
+  .ww-beat{position:relative;text-align:center;padding-top:27px;font-size:7.5px;line-height:1.28;color:var(--ink-soft)}
+  .ww-beat .ww-ic{position:absolute;top:0;left:50%;transform:translateX(-50%);width:22px;height:22px;
+    background:var(--paper);padding:0 3px}
+  .ww-beat b{display:block;color:var(--ink);font-weight:680;margin-bottom:1px}
+  /* triggers */
+  .ww-trigs{display:flex;gap:7px}
+  .ww-trig{flex:1;min-width:0;border:1px solid var(--clay-deep);border-radius:4px;background:var(--sand);padding:5px 7px}
+  .ww-trig .tok{display:block;font-family:ui-monospace,"Consolas",monospace;font-size:8.5px;font-weight:700;
+    color:var(--clay-deep);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ww-trig .g{font-size:7px;line-height:1.3;color:var(--ink-soft)}
+  /* footer caveat */
+  .ww-foot{font-size:6.5px;line-height:1.4;font-style:italic;color:var(--ink-soft);
+    border-top:1px solid var(--clay);padding-top:5px}
+  /* ---------- CONTROLS ---------- */
+  .controls{margin-top:22px;display:flex;align-items:center;gap:18px}
+  .btn{background:rgba(244,241,234,.12);border:1px solid rgba(244,241,234,.3);color:#EDE6D8;
+    width:46px;height:46px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;
+    align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(4px)}
+  .btn:hover{background:var(--clay);border-color:var(--clay);transform:scale(1.06)}
+  .btn:disabled{opacity:.28;cursor:default;transform:none;background:rgba(244,241,234,.12)}
+  .dots{display:flex;gap:7px}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(244,241,234,.28);cursor:pointer;transition:.2s}
+  .dot.on{background:var(--clay);transform:scale(1.35)}
+  .hint{color:#E8E0D2;opacity:.45;font-size:11px;text-align:center;margin-top:12px;letter-spacing:.04em}
+  /* turn-zones */
+  .zone{position:absolute;top:0;height:100%;width:50%;z-index:30;cursor:pointer}
+  .zone.next{right:0} .zone.prev{left:0}
+  /* ---------- zoom + pan ---------- */
+  .stage.zoomed{cursor:grab}
+  .stage.zoomed .zone{cursor:grab}
+  .stage.grabbing,.stage.grabbing .zone{cursor:grabbing}
+  .stage.panning{transition:none}
+  .controls{position:relative;z-index:55}
+  .hint{position:relative;z-index:55}
+  .masthead{position:relative;z-index:56}
+  /* when zoomed, float the nav bar on a backing so it's never lost behind the enlarged book */
+  body.is-zoomed .controls{background:rgba(23,20,16,.64);border:1px solid rgba(244,241,234,.16);
+    border-radius:30px;padding:9px 20px;backdrop-filter:blur(6px);box-shadow:0 6px 22px rgba(0,0,0,.35)}
+  .zoombar{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:8px;
+    background:rgba(23,20,16,.55);border:1px solid rgba(244,241,234,.18);border-radius:30px;
+    padding:6px 9px;backdrop-filter:blur(6px)}
+  .zoombar button{background:rgba(244,241,234,.12);border:1px solid rgba(244,241,234,.3);color:#EDE6D8;
+    width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:19px;line-height:1;display:flex;
+    align-items:center;justify-content:center;transition:.2s;padding:0}
+  .zoombar button:hover{background:var(--clay);border-color:var(--clay)}
+  .zoombar button:disabled{opacity:.3;cursor:default;background:rgba(244,241,234,.12);border-color:rgba(244,241,234,.3)}
+  .zlevel{color:#E8E0D2;font-size:11px;font-weight:600;min-width:40px;text-align:center;
+    letter-spacing:.03em;cursor:pointer;user-select:none}
+  @media (max-width:680px){
+    .stage{max-width:none}
+    .book{aspect-ratio:.66 / 1}
+    .sheet{width:100%}
+    .face{padding:9% 8% 7%}
+    .book::after{display:none}
+    .cols,.split{grid-template-columns:1fr}
+    .src-list{columns:1}
+  }
+</style>
+</head>
+<body>
+  <div class="masthead">A field guide &nbsp;&middot;&nbsp; Reception at launch &nbsp;&middot;&nbsp; 02 June 2026</div>
+
+  <div class="stage">
+    <div class="book" id="book">
+
+      <!-- ============ SHEET 1 :: COVER + BOTTOM LINE ============ -->
+      <div class="sheet" data-i="0">
+        <!-- FRONT = COVER (right page) -->
+        <div class="face front cover">
+          <img class="cover-art" src="cover.png" alt="An army of subagent robots crowds a TOKENS street-food stall while the vendor rakes in cash">
+
+          <div class="cover-scrim"></div>
+          <div class="cover-fg">
+            <div class="eyebrow">DataIM &nbsp;&middot;&nbsp; 02 June 2026</div>
+            <div class="cover-title">
+              <h1>Claude<br>Opus 4.8</h1>
+              <div class="kicker-row">
+                <span class="kicker">&ldquo;An army marches on its stomach&rdquo;</span>
+                <span class="attrib">Sun Tzu, The Art of War</span>
+              </div>
+              <p>Inside: what the update changes and how it was received at launch, dynamic workflows and rapid prototyping, where Opus 4.8 lands on the DeepSWE benchmark, and running open models locally over a private tunnel.</p>
+              <div class="cover-foot">
+                <span>New Model Reception</span>
+                <span>By the makers of <em>The GPT Gazette</em></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- BACK = THE BOTTOM LINE (left page) -->
+        <div class="face back">
+          <div class="eyebrow">01 &middot; The bottom line</div>
+          <h2>What we learned so far</h2>
+          <div class="body-scroll">
+            <p style="margin-bottom:4px">Opus 4.8 builds naturally on Opus 4.7, and it leans into what Claude is increasingly good at: long autonomous runs, and now dynamic workflows.</p>
+            <div class="eyebrow" style="margin-top:16px;margin-bottom:8px">What's new</div>
+            <div class="feat"><div class="n">1</div><div>
+              <h3>Improved coding honesty</h3>
+              <p>Claude is <strong>4x less likely</strong> to let a flaw in its own code pass unflagged, and now ranks <strong>#1</strong> across the major independent benchmarks.</p></div></div>
+            <div class="feat"><div class="n">2</div><div>
+              <h3>Dynamic Workflows</h3>
+              <p>Claude writes a JS script, fans out up to <strong>1,000 subagents</strong> (16 at once), has other agents <em>refute</em> the findings, then verifies before results reach you.</p></div></div>
+            <div class="feat"><div class="n">3</div><div>
+              <h3>Effort control</h3>
+              <p>Sets how hard Claude thinks per task. <strong>High</strong> is the new default; <strong>xhigh</strong> is recommended for coding. Carefully try the <strong>ultracode</strong> setting.</p></div></div>
+            <div class="feat"><div class="n">4</div><div>
+              <h3>Cheaper fast mode + efficiency</h3>
+              <p>Fast mode runs at <strong>2.5x speed</strong> for $10/$50 per M, <strong>3x cheaper</strong> than prior fast mode; ~35% fewer output tokens vs 4.7.</p></div></div>
+            <p style="margin-top:14px;margin-bottom:11px">There's no reason to look back at 4.7. <strong>Opus 4.8 is a modest improvement</strong>, not a fundamental change. GPT-5.5 still has the edge on cost for now, though its 2&times;-token promotion ends <strong>1 June</strong>, so that gap is about to narrow on its own.</p>
+            <p>GPT-5.5 set a high bar, and 4.8 meets it comfortably. The exciting question now is what GPT 5.6 will bring and when Mythos releases.</p>
+          </div>
+          <div class="pagenum">Opus 4.8 field guide &nbsp;&middot;&nbsp; 01</div>
+        </div>
+      </div>
+
+      <!-- ============ SHEET 1 :: VERSUS 4.7 + BENCHMARKS ============ -->
+      <div class="sheet" data-i="1">
+        <!-- FRONT = VERSUS 4.7 -->
+        <div class="face front">
+          <div class="eyebrow">02 &middot; Reception</div>
+          <h2>Praise and pushback</h2>
+          <div class="body-scroll">
+            <p style="margin-bottom:6px">Mixed-to-positive, and it depends what you do. For everyday users the gain is incremental and hard to perceive; for long-context and agentic work, several reviewers call it a <em>step change</em>.</p>
+            <div class="vs">
+              <div class="vs-col praise">
+                <div class="vs-card"><div class="t">Greenfield builds</div><p>Excels at prototypes and standing up new projects fast.</p></div>
+                <div class="vs-card"><div class="t">One-shot features</div><p>Lands whole features in a single pass, little hand-holding.</p></div>
+                <div class="vs-card"><div class="t">Long-context recall</div><p>Reliably finds the right detail buried deep in very large inputs.</p></div>
+                <div class="vs-card"><div class="t">Easier to talk to</div><p>Warmer and collaborative; flags doubt instead of bluffing.</p></div>
+              </div>
+              <div class="vs-spine"><span class="vs-badge">vs</span></div>
+              <div class="vs-col crit">
+                <div class="vs-card"><div class="t">Last-10% gap</div><p>Still stumbles on edge cases in large, legacy codebases.</p></div>
+                <div class="vs-card"><div class="t">Slowness</div><p>Drags on long-context and high-effort runs.</p></div>
+                <div class="vs-card"><div class="t">Hallucinations</div><p>Haven't vanished; not yet one to leave unsupervised.</p></div>
+                <div class="vs-card"><div class="t">Token consumption</div><p>Burns the usage cap fast, especially under ultracode.</p></div>
+              </div>
+            </div>
+            <div class="eyebrow" style="margin-top:12px;margin-bottom:6px">My personal experience</div>
+            <p style="margin-bottom:7px"><strong>One-shot approach.</strong> Prompt Claude to solve the problem, not just follow instructions. Give enough context and constraints to steer it the right way, and prototype in HTML before finalizing the feature.</p>
+            <p><strong>Long-horizon runs.</strong> Lean on auto-mode and goals to let Claude work for hours with minimal guidance. Kick off with the deep-research feature to gather context for your opening prompt.</p>
+          </div>
+          <div class="pagenum">02</div>
+        </div>
+        <!-- BACK = VIRAL ON X -->
+        <div class="face back">
+          <div class="eyebrow" style="margin-bottom:5px">03 &middot; Reception on X</div>
+          <h2 style="margin-bottom:2px">What went viral</h2>
+          <div class="body-scroll">
+            <div class="tweet-row">
+              <img src="tw-venturetwins.png" alt="Tweet by Justine Moore: a man lighting a cigar with a blowtorch, captioned 'Me using Claude Opus 4.8 to rename a file'">
+              <div class="cap">The most-shared post about 4.8 wasn't praise. A blowtorch lighting a cigar, captioned <b>"Me using Claude Opus 4.8 to rename a file,"</b> hit <b>36.9M views</b> and became the launch's defining joke about over-thinking trivial tasks.</div>
+            </div>
+            <div class="tweet-row flip">
+              <img src="tw-midudev.png" alt="Tweet by midudev: Opus 4.8 burned through his subscription while refactoring a codebase">
+              <div class="cap">The token-burn gag, from the most-followed Spanish-speaking dev: he asked 4.8 to refactor his whole codebase, it began a <b>"clean, modular, beautiful architecture,"</b> then on the second file <b>burned through his entire subscription</b> and told him to come back next week.</div>
+            </div>
+          </div>
+          <div class="pagenum">Opus 4.8 field guide &nbsp;&middot;&nbsp; 03</div>
+        </div>
+      </div>
+
+      <!-- ============ SHEET 2 :: RECEPTION + WHERE IT HELPS ============ -->
+      <div class="sheet" data-i="2">
+        <!-- FRONT = THE DEEPSWE BENCHMARK -->
+        <div class="face front">
+          <div class="eyebrow">04 &middot; The DeepSWE benchmark</div>
+          <h2>Second place on the strictest test</h2>
+          <div class="body-scroll">
+            <p style="margin-bottom:2px">Most leaderboards put Opus 4.8 at or near the top. <strong>DeepSWE</strong> &mdash; a contamination-hardened coding benchmark from Datacurve, built to show where frontier models <em>actually</em> diverge &mdash; tells a sharper story: here Claude runs <strong>second</strong>, behind GPT-5.5.</p>
+
+            <div class="bh"><span>DeepSWE leaderboard</span><span class="d">Pass rate &middot; 30 May 2026</span></div>
+            <div class="bench">
+              <div class="brow"><span class="nm">GPT-5.5 <i>xhigh</i></span><span class="btrack"><span class="bfill lead" style="width:70%"></span></span><span class="val">70%<s>&plusmn;4</s></span></div>
+              <div class="brow hi"><span class="nm">Opus 4.8 <i>max</i></span><span class="btrack"><span class="bfill you" style="width:58%"></span></span><span class="val">58%<s>&plusmn;5</s></span></div>
+              <div class="brow"><span class="nm">GPT-5.4 <i>xhigh</i></span><span class="btrack"><span class="bfill" style="width:56%"></span></span><span class="val">56%<s>&plusmn;5</s></span></div>
+              <div class="brow"><span class="nm">Opus 4.7 <i>max</i></span><span class="btrack"><span class="bfill" style="width:54%"></span></span><span class="val">54%<s>&plusmn;5</s></span></div>
+              <div class="brow"><span class="nm">Sonnet 4.6 <i>high</i></span><span class="btrack"><span class="bfill" style="width:32%"></span></span><span class="val">32%<s>&plusmn;4</s></span></div>
+              <div class="brow"><span class="nm">Gemini 3.5 Flash</span><span class="btrack"><span class="bfill" style="width:28%"></span></span><span class="val">28%<s>&plusmn;4</s></span></div>
+            </div>
+            <p class="bcap">113 from-scratch tasks across 91 live open-source repos in 5 languages, one fixed harness for every model. Source: Datacurve.</p>
+
+            <div class="split" style="margin-top:9px">
+              <div><h5>Nothing to memorize</h5><p>Tasks are written from scratch, never merged upstream, and shipped as a shallow clone with no solution hash to find.</p></div>
+              <div><h5>Behavioral grading</h5><p>Hand-written verifiers check what the code does, not how. 0.3% false positives vs 8.5% on SWE-Bench Pro.</p></div>
+              <div><h5>Real scope</h5><p>Reference fixes average 668 lines across 7 files &mdash; long-horizon work, not one-line patches.</p></div>
+            </div>
+
+            <div class="notes2">
+              <div class="note loop"><h6>The Claude footnote</h6>On the older SWE-Bench Pro, roughly <b>18% of Opus 4.7's passes</b> came from reading the answer out of git history. DeepSWE removes that shortcut, and the ranking reshuffled.</div>
+              <div class="note proj"><h6>GPT-5.6 &middot; outlook</h6>No DeepSWE score exists yet, and leaked "canary" builds stay unconfirmed. On trajectory &mdash; <b>5.4's 56 to 5.5's 70</b> &mdash; a 5.6 would likely extend OpenAI's lead, not hand it back. Outlook, not data.</div>
+            </div>
+          </div>
+          <div class="pagenum">04</div>
+        </div>
+        <!-- BACK = PROTOTYPING WITH 4.8 -->
+        <div class="face back">
+          <div class="eyebrow">05 &middot; Prototyping with 4.8</div>
+          <h2>Prototype before you commit</h2>
+          <div class="body-scroll">
+            <p class="lead" style="margin-bottom:2px;font-size:clamp(14px,1.7vw,18px)">The cheapest change is the one you make before the code exists. Let people <span class="hl">try</span> the idea instead of reading a description, and the wrong assumptions surface while they are still cheap to fix.</p>
+            <div class="pm-why">
+              <div><h5>Cheap to change</h5><p>Ripping up a rough sketch costs minutes; ripping up shipped code costs weeks.</p></div>
+              <div><h5>Flaws surface early</h5><p>People react to what they can try, so broken assumptions show before you build on them.</p></div>
+              <div><h5>Rough invites honesty</h5><p>Unfinished-looking work gets honest critique, not admiration for the polish.</p></div>
+            </div>
+
+            <div class="pm-ladder"><span>Low fidelity &middot; cheap to change</span><span class="bar"></span><span>High fidelity &middot; closer to real</span></div>
+            <div class="pm-grid">
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.27 19.385H1.73A1.73 1.73 0 010 17.655V6.345a1.73 1.73 0 011.73-1.73h20.54A1.73 1.73 0 0124 6.345v11.308a1.73 1.73 0 01-1.73 1.731zM5.769 15.923v-4.5l2.308 2.885 2.307-2.885v4.5h2.308V8.078h-2.308l-2.307 2.885-2.308-2.885H3.46v7.847zM21.232 12h-2.309V8.077h-2.307V12h-2.308l3.461 4.039z"/></svg></span><span class="pm-name">Markdown</span></div>
+                <p>Outline the content, copy and structure first, with no layout to argue about yet.</p>
+                <span class="fi">Structure</span>
+              </div>
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.9428 19.8058a.1962.1962 0 0 0-.1679-.0337c-1.26-1.8552-2.8727-3.6104-4.4186-5.3152l-.2521-.284c-.0016-.0732-.0667-.1207-.1342-.1504-.0284-.0277-.0562-.0558-.0843-.0837-.0505-.1005-.1685-.1673-.2858-.1005-.4706.2347-.9068.5855-1.3274.9195-.5536.4345-1.1085.8695-1.6296 1.354a5.0577 5.0577 0 0 0-.5879.6185c-.0842.1168-.0168.2172.0843.2672-.3701.3677-.7402.736-1.109 1.1198a.1896.1896 0 0 0-.0506.1342c0 .05.0337.1.0668.1168l.6559.5012v.0169c.9237.9194 2.5538 2.1729 4.2844 3.5268.2515.201.5205.4014.7727.6017.1173.1342.2346.2847.3357.4182.0506.0662.1685.0837.2353.0331.0337.0337.0843.0668.118.1005a.2395.2395 0 0 0 .1004.0337.1534.1534 0 0 0 .1348-.0668.2371.2371 0 0 0 .0331-.1004c.0175 0 .0169.0168.0337.0168a.1915.1915 0 0 0 .1348-.0505l3.058-3.3265c.1198-.1159.0135-.2668-.0005-.2672zm-7.6277-.1336-1.5459-1.1704-.151-.0998c-.0337-.0169-.0674-.0506-.1011-.0668l-.1174-.1005c.6597-.659 1.3297-1.3074 1.9996-1.9557-.4874.4844-1.4622 1.9057-1.2606 2.3733.0023 0 .0186.0419.0674.0842.3704.311.7398.6232 1.109.9357zm4.0997 3.1261-1.277-.97a26.9056 26.9056 0 0 0-1.5795-1.5044c.689.5181 1.2769.9694 1.3611 1.053.6722.585.6379.485 1.0922.8696l.5542.4008c-.0735.103-.151.1477-.151.151zm.3357.2503-.0337-.0168c.0506-.0331.1011-.0668.1517-.1168zM.5885 3.4751c.0331.2172.0843.4344.1174.6354.2015 1.103.4031 2.1061.7726 2.8583l.1516.568c.0506.2173.1342.485.2185.5519.8568.7521 2.1674 1.8714 3.5785 2.9419a.1775.1775 0 0 0 .2185 0s0 .0162.0168.0162a.1528.1528 0 0 0 .118.0506.1912.1912 0 0 0 .1341-.0506c1.798-1.9887 3.1418-3.6267 4.0997-4.9974.0674-.0668.0843-.1673.0843-.251.0668-.0668.1173-.1504.1847-.2004.0668-.0668.0668-.184 0-.2346l-.0168-.0163c0-.033-.0169-.0836-.0506-.1005-.42-.4007-.722-.6848-1.0416-.9856A93.5546 93.5546 0 0 1 6.822 1.9876c-.0169-.0169-.0337-.0337-.0674-.0337-.3358-.1168-1.0248-.2341-1.8817-.3845C3.596 1.3527 1.865 1.0519.3027.583c0 0-.1011 0-.118.0169L.1348.6505C.0498.7139.0222.7058 0 .7167.017.8172.017.884.0506 1.0013c0 .0331.0673.3009.0673.334zm7.1909 4.7802-.0337.0337a.0362.0362 0 0 1 .0337-.0337zM6.553 2.238c.101.1005.5211.5019.6216.5855-.4369-.201-1.5284-.7022-2.0333-.8695.5043.1005 1.1933.201 1.4117.284ZM.7901 1.4027c.2521.4344.4537 1.9388.6553 3.4095-.118-.4682-.2016-.9357-.3027-1.3708C.9917 2.673.84 1.9876.6385 1.3858c.1232 0 .1516.0212.1516.0169zm-.2858-.3683c0-.0162 0-.033-.0169-.033.0843 0 .1342.0168.2016.0499.0006.0057-.1448-.0169-.1847-.0169zM23.6738.8172c.0169-.0662-.3358-.367-.2184-.3845.2527-.0163.2527-.4008 0-.4008-.3358.0169-.6884.0999-1.008.1504-.5878.1168-1.1926.2341-1.781.3671-1.327.2846-2.6375.5855-3.9481.937-.4032.1167-.857.2003-1.2432.4007-.1348.0668-.118.2004-.0506.284-.0337.0169-.0505.0169-.0842.0337-.1174.0169-.2185.0337-.3358.05-.1011.0168-.1516.1004-.1348.201 0 .0162.0169.0499.0169.0661-.7059.9363-1.4954 1.9226-2.3523 2.9757-.84.9694-1.7306 1.9893-2.6212 3.0424-2.8396 3.3096-6.0487 7.0705-9.5936 10.38a.1613.1613 0 0 0 0 .2341c.0169.0163.0337.0331.0506.0331-.0506.0506-.1011.0843-.1517.1336-.0337.0337-.0505.0668-.0505.1005a.364.364 0 0 0-.0668.0837c-.0674.0667-.0674.1835.0169.234.0667.0662.1847.0662.2346-.0168.0175-.0169.0175-.0337.0337-.0337a.2648.2648 0 0 1 .3701 0c.2016.2178.4032.435.588.6186l-.4201-.3508c-.0674-.0668-.1847-.05-.2347.0168-.068.0662-.0511.1835.0163.234l4.4691 3.7273c.0337.0337.0674.0337.118.0337.0505 0 .0842-.0169.1173-.0506l.101-.0999c.017.0163.05.0163.0669.0163.0505 0 .0842-.0163.118-.05 6.0486-6.0505 10.9216-10.6141 16.4997-14.6927.05-.0331.0668-.1.0668-.1505.0674 0 .118-.05.151-.1167 1.0254-3.1255 1.227-5.9007 1.2938-7.2709 0-.0579.0169-.0371.0169-.0668.0168-.0337.0168-.0505.0168-.0505a.9784.9784 0 0 0-.0668-.6186zm-10.82 4.9144c.2684-.3008.5374-.6186.8064-.9026-1.7306 2.2734-4.6033 5.7665-8.67 9.9288C7.7626 11.699 10.5517 8.54 12.854 5.7316ZM5.1414 23.4662c-.0162-.0168-.0162-.0168 0-.0168zm2.5033-2.156c.1348-.1505.2695-.284.4206-.4345 0 0 0 .0163.0168.0163-.2236.1978-.4334.4182-.4374.4182zm.6896-.6686c.0994-.0993.14-.1724.2852-.3177.9917-1.0193 2.0164-2.0393 3.058-3.0755l.0169-.0168c.2521-.2004.5542-.4177.8232-.6186a228.0627 228.0627 0 0 0-4.1833 4.0286zm6.5187-16.732c-.5543.719-1.1759 1.6716-1.697 2.4238-1.6463 2.3733-6.9393 8.1735-7.0566 8.274A1189.6473 1189.6473 0 0 1 1.26 19.204l-.1005.1005c-.0843-.1005-.0843-.251.0168-.3346 7.476-7.0037 12.0132-12.837 13.845-15.3944-.0506.1167-.0843.2166-.1685.334zm2.9064 3.4269c-.6716-.3851-.9905-.9869-.8064-1.5712l.0506-.201a.7753.7753 0 0 1 .0842-.1666c.1848-.301.4538-.5518.7564-.7023.0163 0 .0331 0 .05-.0168-.0169-.0337-.0169-.0837-.0169-.1336.0169-.1005.0843-.1673.2016-.1673.2016 0 .8238.1841 1.059.3845.0669.05.1343.1168.2017.1836.0842.1004.2184.2677.2852.4013.0337.0169.0674.1841.118.2678.0336.1336.0667.284.0505.4176-.0169.0169 0 .1167-.0169.1167a1.6055 1.6055 0 0 1-.2184.6186c-.0307.0307.0064.0119-.0505.0668-.0843.1342-.2016.251-.319.3346-.3869.2672-.8238.3508-1.2606.234-.1105-.0473-.1672-.0667-.1685-.0667zm4.3692 1.4039c0 .0168-.0168.0499 0 .0667-.0337 0-.0505.0169-.0842.0337-1.3274.9689-2.6212 1.9888-3.915 3.0256 1.109-.9868 2.218-1.9894 3.3776-2.9756.3358-.3009.5711-.6854.6379-1.1199l.1685-1.003v-.0332c.0842-.201.4032-.1173.3526.1-.0042-.0012-.1731.795-.5374 1.9057z"/></svg></span><span class="pm-name">Excalidraw</span></div>
+                <p>Hand-drawn flows and wireframes; the rough look keeps the focus on the idea.</p>
+                <span class="fi">Sketch</span>
+              </div>
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.69 13.419h-2.527l-2.667-4.555a1.292 1.292 0 001.035-1.28V4.16c0-.725-.576-1.312-1.302-1.312H9.771c-.726 0-1.312.576-1.312 1.301v3.435c0 .619.426 1.152 1.034 1.28l-2.666 4.555H4.309c-.725 0-1.312.576-1.312 1.301v3.435c0 .725.576 1.312 1.302 1.312h4.458c.726 0 1.312-.576 1.312-1.302v-3.434c0-.726-.576-1.312-1.301-1.312h-.437l2.645-4.523h2.059l2.656 4.523h-.438c-.725 0-1.312.576-1.312 1.301v3.435c0 .725.576 1.312 1.302 1.312H19.7c.726 0 1.312-.576 1.312-1.302v-3.434c0-.726-.576-1.312-1.301-1.312zM24 22.976c0 .565-.459 1.024-1.013 1.024H1.024A1.022 1.022 0 010 22.987V1.024C0 .459.459 0 1.013 0h21.963C23.541 0 24 .459 24 1.013z"/></svg></span><span class="pm-name">draw.io</span></div>
+                <p>Precise diagrams for architecture, data models and how the pieces connect.</p>
+                <span class="fi">Diagram</span>
+              </div>
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></svg></span><span class="pm-name">Figma</span></div>
+                <p>Wireframes up to clickable, high-fidelity mockups; the standard for dev handoff.</p>
+                <span class="fi">Mockup</span>
+              </div>
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zM6.962 7.68c.754 0 1.337.549 1.405 1.2.069.583-.171 1.097-.822 1.406-.343.171-.48.172-.549.069-.034-.069 0-.137.069-.206.617-.514.617-.926.548-1.508-.034-.378-.308-.618-.583-.618-1.2 0-2.914 2.674-2.674 4.629.103.754.549 1.646 1.509 1.646.308 0 .65-.103.96-.24.5-.264.799-.47 1.097-.8-.073-.885.704-2.046 1.851-2.046.515 0 .926.205.96.583.068.514-.377.582-.514.582s-.378-.034-.378-.17c-.034-.138.309-.07.275-.378-.035-.206-.24-.274-.446-.274-.72 0-1.131.994-1.029 1.611.035.275.172.549.447.549.205 0 .514-.31.617-.755.068-.308.343-.514.583-.514.102 0 .17.034.205.171v.138c-.034.137-.137.548-.102.651 0 .069.034.171.17.171.092 0 .436-.18.777-.459.117-.59.253-1.298.253-1.357.034-.24.137-.48.617-.48.103 0 .171.034.205.171v.138l-.136.617c.445-.583 1.097-.994 1.508-.994.172 0 .309.102.309.274 0 .103 0 .274-.069.446-.137.377-.309.96-.412 1.474 0 .137.035.274.207.274.171 0 .685-.206 1.096-.754l.007-.004c-.002-.068-.007-.134-.007-.202 0-.411.035-.754.104-.994.068-.274.411-.514.617-.514.103 0 .205.069.205.171 0 .035 0 .103-.034.137-.137.446-.24.857-.24 1.269 0 .24.034.582.102.788 0 .034.035.069.07.069.068 0 .548-.445.89-1.028-.308-.206-.48-.549-.48-.96 0-.72.446-1.097.858-1.097.343 0 .617.24.617.72 0 .308-.103.65-.274.96h.102a.77.77 0 0 0 .584-.24.293.293 0 0 1 .134-.117c.335-.425.83-.74 1.41-.74.48 0 .924.205.959.582.068.515-.378.618-.515.618l-.002-.002c-.138 0-.377-.035-.377-.172 0-.137.309-.068.274-.376-.034-.206-.24-.275-.446-.275-.686 0-1.13.891-1.028 1.611.034.275.171.583.445.583.206 0 .515-.308.652-.754.068-.274.343-.514.583-.514.103 0 .17.034.205.171 0 .069 0 .206-.137.652-.17.308-.171.48-.137.617.034.274.171.48.309.583.034.034.068.102.068.102 0 .069-.034.138-.137.138-.034 0-.068 0-.103-.035-.514-.205-.72-.548-.789-.891-.205.24-.445.377-.72.377-.445 0-.89-.411-.96-.926a1.609 1.609 0 0 1 .075-.649c-.203.13-.422.203-.623.203h-.17c-.447.652-.927 1.098-1.27 1.303a.896.896 0 0 1-.377.104c-.068 0-.171-.035-.205-.104-.095-.152-.156-.392-.193-.667-.481.527-1.145.805-1.453.805-.343 0-.548-.206-.582-.55v-.376c.102-.754.377-1.2.377-1.337a.074.074 0 0 0-.069-.07c-.24 0-1.028.824-1.166 1.373l-.103.445c-.068.309-.377.515-.582.515-.103 0-.172-.035-.206-.172v-.137l.046-.233c-.435.31-.87.508-1.075.508-.308 0-.48-.172-.514-.412-.206.274-.445.412-.754.412-.352 0-.696-.24-.862-.593-.244.275-.523.553-.852.764-.48.309-1.028.549-1.68.549-.582 0-1.097-.309-1.371-.583-.412-.377-.651-.96-.686-1.509-.205-1.68.823-3.84 2.4-4.8.378-.205.755-.343 1.132-.343zm9.77 3.291c-.104 0-.172.172-.172.343 0 .274.137.583.309.755a1.74 1.74 0 0 0 .102-.583c0-.343-.137-.515-.24-.515z"/></svg></span><span class="pm-name">Canva</span></div>
+                <p>Template-driven layouts and decks for when it needs to look presentable, fast.</p>
+                <span class="fi">Layout</span>
+              </div>
+              <div class="pm">
+                <div class="pm-top"><span class="pm-ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z"/></svg></span><span class="pm-name">HTML</span></div>
+                <p>A single interactive file Opus 4.8 one-shots, openable in any browser.</p>
+                <span class="fi">Live</span>
+              </div>
+            </div>
+
+            <div class="callout" style="margin-bottom:0;margin-top:8px"><b>Most prototypes are throwaway</b> &mdash; built to learn, then discarded, not grown into the product. Opus 4.8 makes that cheap: it writes the markdown, the diagrams and a runnable HTML artifact straight from a plain-language prompt, so a disposable prototype is one message away.</div>
+          </div>
+          <div class="pagenum">Opus 4.8 field guide &nbsp;&middot;&nbsp; 05</div>
+        </div>
+      </div>
+
+      <!-- ============ SHEET 3 :: HOW TO USE + VERDICT ============ -->
+      <div class="sheet" data-i="3">
+        <!-- FRONT = DYNAMIC WORKFLOWS (full-bleed infographic) -->
+        <div class="face front">
+          <div class="eyebrow">06 &middot; Dynamic Workflows</div>
+          <h2>Claude's new feature explained</h2>
+          <div class="kicker" style="margin-bottom:6px">Starting a dynamic workflow</div>
+          <div class="dwwrap">
+          <img src="opus-4.8-page06.png?v=5" alt="Dynamic Workflows - How the work gets done. Three ways to start one: say 'workflow' in a prompt, run a saved command like /deep-research, or set /effort ultracode for the session. Claude Code then writes a JavaScript orchestration script that a background runtime runs - it plans subtasks, works across tens to hundreds of parallel agents (up to 16 at once, 1,000 per run), verifies and converges by re-checking and refuting until results agree, merges them, and returns one verified answer.">
+          </div>
+          <div class="pagenum">06</div>
+        </div>
+        <!-- BACK = VERDICT -->
+        <div class="face back">
+          <div class="eyebrow" style="margin-bottom:9px">07 &middot; Local models</div>
+          <h2 style="white-space:nowrap;letter-spacing:-.03em;margin-right:-10px">Not every model lives in the cloud</h2>
+          <div class="body-scroll">
+            <p class="lead" style="font-size:clamp(13px,1.5vw,16px);margin-bottom:12px">A colleague at DataIM hosts open models on serious GPUs at home, and a <span class="hl">WireGuard</span> tunnel lets us reach his machine as if it sat on our own desks.</p>
+            <div class="lm-shot">
+              <div class="lm-bar"><span class="dot"></span><span class="dot b"></span><span class="dot c"></span><svg class="lock" width="9" height="11" viewBox="0 0 24 28" fill="currentColor"><path d="M12 0a7 7 0 00-7 7v4H3v17h18V11h-2V7a7 7 0 00-7-7zm0 3a4 4 0 014 4v4H8V7a4 4 0 014-4z"/></svg><span class="url">http://10.66.0.2:8139/ &middot; over WireGuard</span></div>
+              <img src="local-qwen-ui.png" alt="llama.cpp web UI: a prompt asking for a TLDR on the meaning of life, answered by Qwen3.6 35B-A3B with a collapsible reasoning panel, at 63.9 tokens per second">
+            </div>
+            <div class="lm-cap"><span class="k">Running now</span><span><b>Qwen3.6 35B-A3B</b> &mdash; a mixture-of-experts model (35B total, ~3B active per token) served by llama.cpp</span><span><b>63.9 tok/s</b></span><span>step-by-step <b>reasoning</b> &middot; <b>vision</b></span></div>
+            <div class="lm-why">
+              <div><h5>Small &amp; quick</h5><p>About 4,000 lines of code, in the Linux kernel over UDP. It connects in milliseconds at near-wire speed, so the model feels local.</p></div>
+              <div><h5>Modern, quiet crypto</h5><p>One set of strong primitives (Curve25519, ChaCha20-Poly1305). Each peer is a public key tied to its allowed IPs; an unknown key gets no reply.</p></div>
+              <div><h5>One shared LAN</h5><p>Every teammate's device joins one private network, so the endpoint and the apps we build on it sit a hop away.</p></div>
+            </div>
+            <div class="callout" style="margin-top:12px;margin-bottom:0"><b>Why bother?</b> One home rig becomes shared team infrastructure: zero per-token cost, no rate limits, and nothing we send ever leaves the network for a third-party cloud.</div>
+          </div>
+          <div class="pagenum">Opus 4.8 field guide &nbsp;&middot;&nbsp; 07</div>
+        </div>
+      </div>
+
+      <!-- ============ SHEET 4 :: SOURCES + BACK COVER ============ -->
+      <div class="sheet" data-i="4">
+        <!-- FRONT = SOURCES -->
+        <div class="face front" style="background:var(--paper-2)">
+          <div class="eyebrow">Sources &amp; method</div>
+          <h2>How this was built</h2>
+          <div class="body-scroll">
+            <p style="margin-bottom:5px">This field guide was <strong>assembled with Claude Code</strong>. There was no single master prompt &mdash; it came together in stages, each leaving its own record in the project folder.</p>
+            <ol class="how" style="margin:6px 0 7px">
+              <li><b>Research loop.</b> A cron fired every 30 minutes for 24 hours &mdash; 62 passes &mdash; each rotating across docs, benchmarks, Hacker News, Reddit and X to append chart-ready atoms.</li>
+              <li><b>Synthesis.</b> Those atoms were distilled into a six-part brief and a page map: bottom line, what changed, reception, how to use it.</li>
+              <li><b>Flip-book.</b> One self-contained HTML file, hand-built in the Anthropic house style &mdash; cream paper, terracotta accent, serif display, 3D page turns.</li>
+              <li><b>Verified per page.</b> Later pages drew their own <b>/deep-research</b>; every page was rendered in a headless browser and checked to fit with no overflow.</li>
+              <li><b>Imagery.</b> The cover painting and the page-6 workflow icons were generated with <b>GPT Image 2.0</b>, then placed into the layout by hand.</li>
+            </ol>
+            <div class="src-list">
+              <p class="grp"><b>Primary</b> &middot; Anthropic launch post, system card &amp; docs &middot; Datacurve DeepSWE &middot; WireGuard whitepaper &amp; docs</p>
+              <p class="grp"><b>Independent analysis</b> &middot; Artificial Analysis (Intelligence Index, GDPval) &middot; BenchLM &middot; Simon Willison &middot; Every.to &middot; Claire Vo / Lenny's &middot; Lance Martin / LangChain</p>
+              <p class="grp"><b>Press &amp; partners</b> &middot; TechCrunch &middot; VentureBeat &middot; The New Stack &middot; 36Kr &middot; Devin &middot; Cursor &middot; Databricks &middot; Bun</p>
+              <p class="grp"><b>Community</b> &middot; r/ClaudeAI &middot; Hacker News &middot; X</p>
+            </div>
+            <p style="margin-top:5px;text-align:center;font-family:var(--serif);font-style:italic;color:var(--clay-deep)">&middot; end &middot;</p>
+          </div>
+          <div class="pagenum">Opus 4.8 field guide</div>
+        </div>
+        <!-- BACK = BACK COVER -->
+        <div class="face back cover" style="justify-content:center;align-items:center;text-align:center">
+          <div class="cover-fg" style="flex:none">
+            <div class="eyebrow" style="color:#F1D9C8;opacity:.85">DataIM &middot; New Model Reception</div>
+            <h1 style="font-size:clamp(22px,3.4vw,34px);color:#FBF5EC">The GPT<br>Gazette</h1>
+            <p style="color:#F3DDCD;margin-top:12px;max-width:none">A field guide to Claude Opus 4.8, compiled at launch, 02 June 2026.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- turn zones (added by JS) -->
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prev" aria-label="Previous">&#8249;</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next" aria-label="Next">&#8250;</button>
+  </div>
+  <div class="hint">Click the page edges or press &larr; / &rarr; to turn &middot; zoom with &minus; / &plus;, the keys, or Ctrl + scroll &middot; drag to pan</div>
+
+  <div class="zoombar" id="zoombar">
+    <button id="zout" type="button" aria-label="Zoom out">&minus;</button>
+    <span class="zlevel" id="zlevel" title="Reset to 100%">100%</span>
+    <button id="zin" type="button" aria-label="Zoom in">&plus;</button>
+  </div>
+
+<script>
+(function(){
+  var book=document.getElementById("book");
+  var sheets=Array.prototype.slice.call(book.querySelectorAll(".sheet"));
+  var N=sheets.length;            // 5 sheets
+  var turned=0;                   // how many sheets are flipped (0..N)
+  var prevBtn=document.getElementById("prev");
+  var nextBtn=document.getElementById("next");
+  var dotsWrap=document.getElementById("dots");
+
+  // base z-index: unflipped sheets stack so sheet0 is on top
+  function setZ(){
+    sheets.forEach(function(s,i){
+      if(i<turned){ s.style.zIndex = i+1; }          // flipped: later ones on top of the left stack
+      else { s.style.zIndex = N - i; }               // unflipped: earlier ones on top of the right stack
+    });
+  }
+
+  // shift the whole book so the open spread stays centred
+  // closed (turned 0): only right page visible -> nudge left so cover sits centre
+  // open: book centred. fully turned: only left page -> nudge right.
+  function reposition(){
+    var w = book.clientWidth/2; // half = one page width
+    var tx = 0;
+    if(turned===0){ tx = -w/2; }            // show cover centred
+    else if(turned===N){ tx = w/2; }        // show back cover centred
+    else { tx = 0; }                        // open spread centred
+    book.style.transform = "translateX("+tx+"px)";
+  }
+
+  function render(){
+    sheets.forEach(function(s,i){ s.classList.toggle("flipped", i<turned); });
+    setZ();
+    reposition();
+    prevBtn.disabled = (turned===0);
+    nextBtn.disabled = (turned===N);
+    Array.prototype.forEach.call(dotsWrap.children,function(d,i){
+      d.classList.toggle("on", i===turned);
+    });
+  }
+
+  function next(){ if(turned<N){ turned++; render(); } }
+  function prev(){ if(turned>0){ turned--; render(); } }
+
+  nextBtn.addEventListener("click",next);
+  prevBtn.addEventListener("click",prev);
+  document.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight") next();
+    else if(e.key==="ArrowLeft") prev();
+  });
+
+  // dots: one per spread state (0..N)
+  for(var i=0;i<=N;i++){
+    (function(idx){
+      var d=document.createElement("div");
+      d.className="dot";
+      d.addEventListener("click",function(){ turned=idx; render(); });
+      dotsWrap.appendChild(d);
+    })(i);
+  }
+
+  // click zones on the book for page turning
+  var zNext=document.createElement("div"); zNext.className="zone next"; zNext.addEventListener("click",next);
+  var zPrev=document.createElement("div"); zPrev.className="zone prev"; zPrev.addEventListener("click",prev);
+  book.appendChild(zNext); book.appendChild(zPrev);
+
+  window.addEventListener("resize",reposition);
+
+  // scale each diagram figure to fit its allotted page space (font-independent, never overflows)
+  function fitFigs(){
+    var figs=document.querySelectorAll(".dwfig");
+    for(var i=0;i<figs.length;i++){
+      var fig=figs[i], box=fig.parentElement;
+      fig.style.transform="none";
+      var aw=box.clientWidth, ah=box.clientHeight, nw=fig.scrollWidth, nh=fig.scrollHeight;
+      if(!aw||!ah||!nw||!nh) continue;
+      var sc=Math.min(1, aw/nw, ah/nh);
+      fig.style.transform = sc<0.999 ? "scale("+sc+")" : "none";
+    }
+  }
+  window.addEventListener("resize",fitFigs);
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fitFigs);}
+  setTimeout(fitFigs,250);
+  fitFigs();
+
+  /* ---------- zoom + pan ---------- */
+  var stage=document.querySelector(".stage");
+  var zoom=1, panX=0, panY=0, suppressClick=false;
+  var ZMIN=0.6, ZMAX=3, ZSTEP=0.25;
+  var zin=document.getElementById("zin");
+  var zout=document.getElementById("zout");
+  var zlevel=document.getElementById("zlevel");
+
+  function clampPan(){
+    if(zoom<=1.001){ panX=0; panY=0; return; }
+    var mx=stage.clientWidth*(zoom-1)/2+80, my=stage.clientHeight*(zoom-1)/2+80;
+    panX=Math.max(-mx,Math.min(mx,panX));
+    panY=Math.max(-my,Math.min(my,panY));
+  }
+  function paint(){ stage.style.transform="translate("+panX+"px,"+panY+"px) scale("+zoom+")"; }
+  function applyZoom(){
+    clampPan(); paint();
+    stage.classList.toggle("zoomed", zoom>1.001);
+    document.body.classList.toggle("is-zoomed", zoom>1.001);
+    zlevel.textContent=Math.round(zoom*100)+"%";
+    zin.disabled=zoom>=ZMAX-1e-6; zout.disabled=zoom<=ZMIN+1e-6;
+  }
+  function setZoom(z){ zoom=Math.max(ZMIN,Math.min(ZMAX,Math.round(z*100)/100)); applyZoom(); }
+
+  zin.addEventListener("click",function(){ setZoom(zoom+ZSTEP); });
+  zout.addEventListener("click",function(){ setZoom(zoom-ZSTEP); });
+  zlevel.addEventListener("click",function(){ panX=0; panY=0; setZoom(1); });
+
+  document.addEventListener("keydown",function(e){
+    if(e.key==="+"||e.key==="="){ setZoom(zoom+ZSTEP); e.preventDefault(); }
+    else if(e.key==="-"||e.key==="_"){ setZoom(zoom-ZSTEP); e.preventDefault(); }
+    else if(e.key==="0"){ panX=0; panY=0; setZoom(1); }
+  });
+  stage.addEventListener("wheel",function(e){
+    if(e.ctrlKey||e.metaKey){ e.preventDefault(); setZoom(zoom+(e.deltaY<0?ZSTEP:-ZSTEP)); }
+  },{passive:false});
+
+  // drag-to-pan, only when zoomed in (clicks still turn pages when not dragged)
+  var dragging=false, dragged=false, sx=0, sy=0, spx=0, spy=0;
+  stage.addEventListener("pointerdown",function(e){
+    if(zoom<=1.001) return;
+    dragging=true; dragged=false; sx=e.clientX; sy=e.clientY; spx=panX; spy=panY;
+    stage.classList.add("grabbing");
+  });
+  window.addEventListener("pointermove",function(e){
+    if(!dragging) return;
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    if(!dragged && Math.abs(dx)+Math.abs(dy)>5){ dragged=true; stage.classList.add("panning"); }
+    if(dragged){ panX=spx+dx; panY=spy+dy; clampPan(); paint(); }
+  });
+  window.addEventListener("pointerup",function(){
+    if(!dragging) return;
+    dragging=false; stage.classList.remove("grabbing","panning");
+    if(dragged) suppressClick=true;
+  });
+  stage.addEventListener("click",function(e){
+    if(suppressClick){ suppressClick=false; e.stopPropagation(); e.preventDefault(); }
+  },true);
+  window.addEventListener("resize",function(){ clampPan(); paint(); });
+  applyZoom();
+
+  render();
+})();
+</script>
+</body>
+</html>
